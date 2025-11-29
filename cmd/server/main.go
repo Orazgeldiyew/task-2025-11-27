@@ -1,16 +1,3 @@
-// Link Status Checker API.
-//
-// Сервис принимает списки ссылок, асинхронно проверяет их доступность
-// и позволяет сформировать PDF-отчёт по ранее созданным наборам ссылок.
-//
-// Тестовое задание: веб-сервис без внешней инфраструктуры (DB, Docker и т.д.).
-//
-// @title           Link Status Checker API
-// @version         1.0
-// @description     Сервис для проверки доступности интернет-ссылок и генерации PDF-отчётов по наборам ссылок.
-// @host            localhost:8080
-// @BasePath        /
-// @schemes         http
 package main
 
 import (
@@ -27,8 +14,12 @@ import (
 	"task/internal/transport"
 )
 
+// @title   Link Status Checker API
+// @version 1.0
+// @host    localhost:8080
+// @BasePath /
+// @schemes http
 func main() {
-
 	st := storage.NewFileStorage("data/state.json")
 
 	mgr, err := service.NewManager(st)
@@ -49,7 +40,7 @@ func main() {
 	}
 
 	go func() {
-		log.Println("Server is running on http://localhost:8080")
+		log.Println("server listening on http://localhost:8080")
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("server failed: %v", err)
 		}
@@ -58,7 +49,6 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Println("Shutting down...")
 
 	cancel()
 
@@ -66,8 +56,6 @@ func main() {
 	defer shutdownCancel()
 
 	if err := srv.Shutdown(shutdownCtx); err != nil {
-		log.Printf("HTTP server Shutdown error: %v", err)
-	} else {
-		log.Println("HTTP server stopped gracefully")
+		log.Printf("shutdown error: %v", err)
 	}
 }

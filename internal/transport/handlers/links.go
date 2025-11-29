@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -14,10 +13,9 @@ type LinksHandler struct {
 
 func RegisterLinksRoutes(r *gin.Engine, mgr *service.Manager) {
 	h := &LinksHandler{manager: mgr}
-	r.POST("/links", h.CreateLinks)
+	r.POST("/links", h.Create)
 }
 
-// CreateLinks godoc
 // @Summary      Add links batch
 // @Tags         links
 // @Accept       json
@@ -27,9 +25,8 @@ func RegisterLinksRoutes(r *gin.Engine, mgr *service.Manager) {
 // @Failure      400      {object}  map[string]string
 // @Failure      500      {object}  map[string]string
 // @Router       /links [post]
-func (h *LinksHandler) CreateLinks(c *gin.Context) {
+func (h *LinksHandler) Create(c *gin.Context) {
 	var req LinksRequest
-
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON"})
 		return
@@ -41,7 +38,6 @@ func (h *LinksHandler) CreateLinks(c *gin.Context) {
 
 	batch, err := h.manager.CreateBatch(req.Links)
 	if err != nil {
-		log.Println("CreateBatch:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}

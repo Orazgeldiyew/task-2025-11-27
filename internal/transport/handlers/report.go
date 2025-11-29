@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 
@@ -17,10 +16,9 @@ type ReportHandler struct {
 
 func RegisterReportRoutes(r *gin.Engine, mgr *service.Manager) {
 	h := &ReportHandler{manager: mgr}
-	r.POST("/links/report", h.CreateReport)
+	r.POST("/links/report", h.Create)
 }
 
-// CreateReport godoc
 // @Summary      Generate report
 // @Tags         report
 // @Accept       json
@@ -31,14 +29,13 @@ func RegisterReportRoutes(r *gin.Engine, mgr *service.Manager) {
 // @Failure      404      {object}  map[string]string
 // @Failure      500      {object}  map[string]string
 // @Router       /links/report [post]
-func (h *ReportHandler) CreateReport(c *gin.Context) {
+func (h *ReportHandler) Create(c *gin.Context) {
 	var req ReportRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON"})
 		return
 	}
-
 	if len(req.LinksList) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "links_list must not be empty"})
 		return
@@ -66,27 +63,22 @@ func (h *ReportHandler) CreateReport(c *gin.Context) {
 
 	for _, b := range batches {
 		for _, link := range b.Links {
-			status := b.Status[link]
-
 			pdf.Cell(20, 8, strconv.FormatInt(b.ID, 10))
-			pdf.Cell(100, 8, truncate(link, 60))
-			pdf.Cell(40, 8, string(status))
+			pdf.Cell(100, 8, cut(link, 60))
+			pdf.Cell(40, 8, string(b.Status[link]))
 			pdf.Ln(8)
 		}
 	}
 
 	c.Header("Content-Type", "application/pdf")
 	c.Header("Content-Disposition", `attachment; filename="report.pdf"`)
-
-	if err := pdf.Output(c.Writer); err != nil {
-		log.Println("pdf output error:", err)
-	}
+	_ = pdf.Output(c.Writer)
 }
 
-func truncate(s string, n int) string {
-	rs := []rune(s)
-	if len(rs) <= n {
+func cut(s string, n int) string {
+	r := []rune(s)
+	if len(r) <= n {
 		return s
 	}
-	return string(rs[:n-3]) + "..."
+	return string(r[:n-3]) + "..."
 }
