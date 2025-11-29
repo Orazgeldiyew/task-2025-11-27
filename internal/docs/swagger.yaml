@@ -1,0 +1,117 @@
+basePath: /
+definitions:
+  handlers.LinksRequest:
+    description: Запрос на создание набора ссылок для проверки.
+    properties:
+      links:
+        description: |-
+          Список URL для проверки.
+          Может содержать одну или несколько ссылок.
+        items:
+          type: string
+        type: array
+    type: object
+  handlers.LinksResponse:
+    description: Ответ с присвоенным номером набора и начальными статусами ссылок.
+    properties:
+      links:
+        additionalProperties:
+          type: string
+        description: 'Статусы по каждой ссылке: pending / available / not available.'
+        type: object
+      links_num:
+        description: Уникальный номер набора ссылок.
+        type: integer
+    type: object
+  handlers.ReportRequest:
+    description: Запрос на формирование PDF-отчёта по списку ранее созданных наборов.
+    properties:
+      links_list:
+        description: |-
+          Список идентификаторов наборов ссылок (links_num),
+          для которых нужно сформировать отчёт.
+        items:
+          type: integer
+        type: array
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Сервис для проверки доступности интернет-ссылок и генерации PDF-отчётов
+    по наборам ссылок.
+  title: Link Status Checker API
+  version: "1.0"
+paths:
+  /links:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Links batch
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LinksRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.LinksResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add links batch
+      tags:
+      - links
+  /links/report:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Report request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.ReportRequest'
+      produces:
+      - application/pdf
+      responses:
+        "200":
+          description: PDF
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Generate report
+      tags:
+      - report
+schemes:
+- http
+swagger: "2.0"

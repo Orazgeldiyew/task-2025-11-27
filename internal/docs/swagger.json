@@ -1,0 +1,169 @@
+{
+    "schemes": [
+        "http"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "Сервис для проверки доступности интернет-ссылок и генерации PDF-отчётов по наборам ссылок.",
+        "title": "Link Status Checker API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/links": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "links"
+                ],
+                "summary": "Add links batch",
+                "parameters": [
+                    {
+                        "description": "Links batch",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.LinksRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.LinksResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/links/report": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/pdf"
+                ],
+                "tags": [
+                    "report"
+                ],
+                "summary": "Generate report",
+                "parameters": [
+                    {
+                        "description": "Report request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ReportRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PDF"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "handlers.LinksRequest": {
+            "description": "Запрос на создание набора ссылок для проверки.",
+            "type": "object",
+            "properties": {
+                "links": {
+                    "description": "Список URL для проверки.\nМожет содержать одну или несколько ссылок.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "handlers.LinksResponse": {
+            "description": "Ответ с присвоенным номером набора и начальными статусами ссылок.",
+            "type": "object",
+            "properties": {
+                "links": {
+                    "description": "Статусы по каждой ссылке: pending / available / not available.",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "links_num": {
+                    "description": "Уникальный номер набора ссылок.",
+                    "type": "integer"
+                }
+            }
+        },
+        "handlers.ReportRequest": {
+            "description": "Запрос на формирование PDF-отчёта по списку ранее созданных наборов.",
+            "type": "object",
+            "properties": {
+                "links_list": {
+                    "description": "Список идентификаторов наборов ссылок (links_num),\nдля которых нужно сформировать отчёт.",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        }
+    }
+}
